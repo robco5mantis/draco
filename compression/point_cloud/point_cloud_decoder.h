@@ -25,6 +25,8 @@ namespace draco {
 // basic functionality that is shared between different decoders.
 class PointCloudDecoder {
  public:
+   using CreateDataBuffer = std::function<DataBuffer* (PointAttribute*)>;
+
   PointCloudDecoder();
   virtual ~PointCloudDecoder() = default;
 
@@ -62,6 +64,9 @@ class PointCloudDecoder {
 
   DecoderBuffer *buffer() { return buffer_; }
 
+  void setCreateDataBuffer(CreateDataBuffer cdb);
+  DataBuffer* createDataBufferForAttribute(PointAttribute *attr) const;
+
  protected:
   // Can be implemented by derived classes to perform any custom initialization
   // of the decoder. Called in the Decode() method.
@@ -87,6 +92,9 @@ class PointCloudDecoder {
   // Bit-stream version of the encoder that encoded the input data.
   uint8_t version_major_;
   uint8_t version_minor_;
+
+  //callback function for creating custom data buffers
+  CreateDataBuffer create_data_buffer_;
 };
 
 }  // namespace draco

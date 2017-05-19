@@ -38,6 +38,8 @@ class PointAttribute : public GeometryAttribute {
   PointAttribute(PointAttribute &&attribute) = default;
   PointAttribute &operator=(PointAttribute &&attribute) = default;
 
+
+  bool setBuffer(std::unique_ptr<DataBuffer> &&buff);
   // Prepares the attribute storage for the specified number of entries.
   bool Reset(size_t num_attribute_values);
 

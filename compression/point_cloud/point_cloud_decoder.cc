@@ -74,6 +74,16 @@ bool PointCloudDecoder::Decode(DecoderBuffer *in_buffer,
   return true;
 }
 
+void PointCloudDecoder::setCreateDataBuffer(CreateDataBuffer cdb)
+{
+  create_data_buffer_ = cdb;
+}
+
+DataBuffer* PointCloudDecoder::createDataBufferForAttribute(PointAttribute *attr) const
+{
+  return create_data_buffer_ ? create_data_buffer_(attr) : nullptr;
+}
+
 bool PointCloudDecoder::DecodePointAttributes() {
   uint8_t num_attributes_decoders;
   if (!buffer_->Decode(&num_attributes_decoders))

@@ -36,6 +36,7 @@ struct DataBufferDescriptor {
 class DataBuffer {
  public:
   DataBuffer();
+  virtual ~DataBuffer();
   bool Update(const void *data, int64_t size);
   // TODO(zhafang): The two update functions should be combined. I will
   // leave for now in case it breaks any geometry compression tools.
@@ -64,15 +65,32 @@ class DataBuffer {
     descriptor_.buffer_update_count = buffer_update_count;
   }
   int64_t update_count() const { return descriptor_.buffer_update_count; }
-  size_t data_size() const { return data_.size(); }
-  const uint8_t *data() const { return data_.data(); }
+  size_t data_size() const { return data_size_;/*data_.size();*/ }
+  const uint8_t *data() const { return data_;/* data_.data();*/ }
   int64_t buffer_id() const { return descriptor_.buffer_id; }
   void set_buffer_id(int64_t buffer_id) { descriptor_.buffer_id = buffer_id; }
 
- private:
-  std::vector<uint8_t> data_;
+protected:
+  virtual void resize(int64_t size) = 0;
+
+ protected:
+   uint8_t *data_;
+   size_t data_size_;
+
   // Counter incremented by Update() calls.
   DataBufferDescriptor descriptor_;
+};
+
+class VectorDataBuffer : public DataBuffer
+{
+public:
+  VectorDataBuffer();
+  virtual ~VectorDataBuffer();
+
+  void resize(int64_t size) override;
+  
+private:
+  std::vector<uint8_t> vector_;
 };
 
 }  // namespace draco

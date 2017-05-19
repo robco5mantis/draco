@@ -32,9 +32,26 @@ PointAttribute::PointAttribute(const GeometryAttribute &att)
       num_unique_entries_(0),
       identity_mapping_(false) {}
 
+bool PointAttribute::setBuffer(std::unique_ptr<DataBuffer> &&buff)
+{
+  if(attribute_buffer_)
+    return false;
+
+  attribute_buffer_ = std::move(buff);
+
+  const int64_t entry_size = DataTypeLength(data_type()) * components_count();
+  if(attribute_buffer_)
+  {
+    assert(!attribute_buffer_->data_size() % entry_size);
+    num_unique_entries_ = attribute_buffer_->data_size() / entry_size;
+  }
+  ResetBuffer(attribute_buffer_.get(), entry_size, 0);
+  return true;
+}
+
 bool PointAttribute::Reset(size_t num_attribute_values) {
   if (attribute_buffer_ == nullptr) {
-    attribute_buffer_ = std::unique_ptr<DataBuffer>(new DataBuffer());
+    attribute_buffer_ = std::unique_ptr<DataBuffer>(new VectorDataBuffer());
   }
   const int64_t entry_size = DataTypeLength(data_type()) * components_count();
   if (!attribute_buffer_->Update(nullptr, num_attribute_values * entry_size))

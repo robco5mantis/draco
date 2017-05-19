@@ -16,45 +16,59 @@
 
 namespace draco {
 
-DataBuffer::DataBuffer() {}
+DataBuffer::DataBuffer() : data_(nullptr), data_size_(0) {}
+DataBuffer::~DataBuffer() {}
 
 bool DataBuffer::Update(const void *data, int64_t size) {
-  if (size < 0)
+  if(size < 0)
     return false;
 
-  if (data == nullptr) {
-    // If no data is provided, just resize the buffer.
-    data_.resize(size);
-  } else {
-    const uint8_t *const byte_data = static_cast<const uint8_t *>(data);
-    data_.assign(byte_data, byte_data + size);
-  }
+  resize(size);
+
+  if(data)
+    std::memcpy(data_, data, size);
+  
   descriptor_.buffer_update_count++;
   return true;
 }
 
 bool DataBuffer::Update(const void *data, int64_t size, int64_t offset) {
-  if (data == nullptr) {
-    if (size + offset < 0)
+  if(data == nullptr) {
+    if(size + offset < 0)
       return false;
     // If no data is provided, just resize the buffer.
-    data_.resize(size + offset);
-  } else {
-    if (size < 0)
+    resize(size + offset);
+  }
+  else {
+    if(size < 0)
       return false;
-    if (size + offset > static_cast<int64_t>(data_.size()))
-      data_.resize(size + offset);
-    const uint8_t *const byte_data = static_cast<const uint8_t *>(data);
-    std::copy(byte_data, byte_data + size, data_.data() + offset);
+    if(size + offset > static_cast<int64_t>(data_size_))
+      resize(size + offset);
+    std::memcpy(data_ + offset, data, size);
   }
   descriptor_.buffer_update_count++;
   return true;
 }
 
+
 void DataBuffer::WriteDataToStream(std::ostream &stream) {
-  if (data_.size() == 0)
+  if (data_size_ == 0)
     return;
-  stream.write(reinterpret_cast<char *>(data_.data()), data_.size());
+  stream.write(reinterpret_cast<char *>(data_), data_size_);
 }
+
+VectorDataBuffer::VectorDataBuffer() {}
+
+VectorDataBuffer::~VectorDataBuffer() {}
+
+void VectorDataBuffer::resize(int64_t size)
+{
+  vector_.resize(size);
+  data_ = vector_.data();
+  data_size_ = size;
+}
+
+
+
 
 }  // namespace draco

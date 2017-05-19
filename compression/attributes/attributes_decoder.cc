@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 #include "compression/attributes/attributes_decoder.h"
+#include "compression/point_cloud/point_cloud_decoder.h"
 
 namespace draco {
 
@@ -32,6 +33,7 @@ bool AttributesDecoder::DecodeAttributesDecoderData(DecoderBuffer *in_buffer) {
     return false;
   point_attribute_ids_.resize(num_attributes);
   PointCloud *pc = point_cloud_;
+  PointCloudDecoder *pcd = point_cloud_decoder_;
   for (int i = 0; i < num_attributes; ++i) {
     // Decode attribute descriptor data.
     uint8_t att_type, data_type, components_count, normalized;
@@ -54,8 +56,13 @@ bool AttributesDecoder::DecodeAttributesDecoderData(DecoderBuffer *in_buffer) {
             components_count, draco_dt, normalized > 0,
             DataTypeLength(draco_dt) * components_count, 0);
     ga.set_custom_id(custom_id);
+    
+    PointAttribute *att = new PointAttribute(ga);
+    if(DataBuffer *att_buff = pcd->createDataBufferForAttribute(att))
+      att->setBuffer(std::unique_ptr<DataBuffer>(att_buff));
+    
     const int att_id = pc->AddAttribute(
-        std::unique_ptr<PointAttribute>(new PointAttribute(ga)));
+        std::unique_ptr<PointAttribute>(att));
     point_attribute_ids_[i] = att_id;
   }
   return true;
