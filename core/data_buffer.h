@@ -71,7 +71,7 @@ class DataBuffer {
   void set_buffer_id(int64_t buffer_id) { descriptor_.buffer_id = buffer_id; }
 
 protected:
-  virtual void resize(int64_t size) = 0;
+  virtual bool resize(int64_t size) = 0;
 
  protected:
    uint8_t *data_;
@@ -87,10 +87,20 @@ public:
   VectorDataBuffer();
   virtual ~VectorDataBuffer();
 
-  void resize(int64_t size) override;
+  bool resize(int64_t size) override;
   
 private:
   std::vector<uint8_t> vector_;
+};
+
+class FixedDataBuffer : public DataBuffer
+{
+public:
+  FixedDataBuffer(const uint8_t *data, size_t size);
+  virtual ~FixedDataBuffer();
+
+  bool resize(int64_t size) override;
+
 };
 
 }  // namespace draco

@@ -23,7 +23,8 @@ bool DataBuffer::Update(const void *data, int64_t size) {
   if(size < 0)
     return false;
 
-  resize(size);
+  if(!resize(size))
+    return false;
 
   if(data)
     std::memcpy(data_, data, size);
@@ -37,13 +38,17 @@ bool DataBuffer::Update(const void *data, int64_t size, int64_t offset) {
     if(size + offset < 0)
       return false;
     // If no data is provided, just resize the buffer.
-    resize(size + offset);
+    if(!resize(size + offset))
+      return false;
   }
   else {
     if(size < 0)
       return false;
     if(size + offset > static_cast<int64_t>(data_size_))
-      resize(size + offset);
+    {
+      if(!resize(size + offset))
+        return false;
+    }
     std::memcpy(data_ + offset, data, size);
   }
   descriptor_.buffer_update_count++;
@@ -61,13 +66,28 @@ VectorDataBuffer::VectorDataBuffer() {}
 
 VectorDataBuffer::~VectorDataBuffer() {}
 
-void VectorDataBuffer::resize(int64_t size)
+bool VectorDataBuffer::resize(int64_t size)
 {
   vector_.resize(size);
   data_ = vector_.data();
   data_size_ = size;
+  return true;
 }
 
+FixedDataBuffer::FixedDataBuffer(const uint8_t *data, size_t size)
+{
+  data_ = const_cast<uint8_t *>(data);
+  data_size_ = size;
+}
+
+FixedDataBuffer::~FixedDataBuffer()
+{
+}
+
+bool FixedDataBuffer::resize(int64_t size)
+{
+  return false;
+}
 
 
 

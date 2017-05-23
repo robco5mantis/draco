@@ -42,7 +42,7 @@ bool PointAttribute::setBuffer(std::unique_ptr<DataBuffer> &&buff)
   const int64_t entry_size = DataTypeLength(data_type()) * components_count();
   if(attribute_buffer_)
   {
-    assert(!attribute_buffer_->data_size() % entry_size);
+    assert(!(attribute_buffer_->data_size() % entry_size));
     num_unique_entries_ = attribute_buffer_->data_size() / entry_size;
   }
   ResetBuffer(attribute_buffer_.get(), entry_size, 0);
