@@ -25,7 +25,7 @@ using std::unordered_map;
 template <bool B, class T, class F>
 using conditional_t = typename std::conditional<B, T, F>::type;
 
-Mesh::Mesh() {}
+Mesh::Mesh() { faces_ = std::unique_ptr<Faces>(new IndexTypeVector<FaceIndex, Face>());  }
 
 void Mesh::ApplyPointIdDeduplication(
     const IndexTypeVector<PointIndex, PointIndex> &id_map,
@@ -33,7 +33,7 @@ void Mesh::ApplyPointIdDeduplication(
   PointCloud::ApplyPointIdDeduplication(id_map, unique_point_ids);
   for (FaceIndex f(0); f < num_faces(); ++f) {
     for (int32_t c = 0; c < 3; ++c) {
-      faces_[f][c] = id_map[faces_[f][c]];
+      (*faces_)[f][c] = id_map[(*faces_)[f][c]];
     }
   }
 }

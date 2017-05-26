@@ -42,27 +42,30 @@ enum MeshAttributeElementType {
 class Mesh : public PointCloud {
  public:
   typedef std::array<PointIndex, 3> Face;
+  typedef BasicIndexType<FaceIndex, Face> Faces;
 
   Mesh();
 
-  void AddFace(const Face &face) { faces_.push_back(face); }
+  void AddFace(const Face &face) { faces_->push_back(face); }
 
   void SetFace(FaceIndex face_id, const Face &face) {
-    if (face_id >= faces_.size()) {
-      faces_.resize(face_id.value() + 1, Face());
+    if (face_id >= faces_->size()) {
+      faces_->resize(face_id.value() + 1, Face());
     }
-    faces_[face_id] = face;
+    (*faces_)[face_id] = face;
   }
 
   // Sets the total number of faces. Creates new empty faces or deletes
   // existing ones if necessary.
-  void SetNumFaces(size_t num_faces) { faces_.resize(num_faces, Face()); }
+  void SetNumFaces(size_t num_faces) { faces_->resize(num_faces, Face()); }
 
-  FaceIndex::ValueType num_faces() const { return faces_.size(); }
+  void SetFaces(std::unique_ptr<Faces> &&faces) { faces_ = std::move(faces); }
+
+  FaceIndex::ValueType num_faces() const { return faces_->size(); }
   const Face &face(FaceIndex face_id) const {
     DCHECK_LE(0, face_id.value());
-    DCHECK_LT(face_id.value(), static_cast<int>(faces_.size()));
-    return faces_[face_id];
+    DCHECK_LT(face_id.value(), static_cast<int>(faces_->size()));
+    return (*faces_)[face_id];
   }
 
   void SetAttribute(int att_id, std::unique_ptr<PointAttribute> pa) override {
@@ -99,7 +102,7 @@ class Mesh : public PointCloud {
 
   // Vertex indices valid for all attributes. Each attribute has its own map
   // that converts vertex indices into attribute indices.
-  IndexTypeVector<FaceIndex, Face> faces_;
+  std::unique_ptr<Faces> faces_;
 
   friend struct MeshHasher;
 };
@@ -112,9 +115,9 @@ struct MeshHasher {
     PointCloudHasher pc_hasher;
     size_t hash = pc_hasher(mesh);
     // Hash faces.
-    for (FaceIndex i(0); i < mesh.faces_.size(); ++i) {
+    for (FaceIndex i(0); i < mesh.faces_->size(); ++i) {
       for (int j = 0; j < 3; ++j) {
-        hash = HashCombine(mesh.faces_[i][j].value(), hash);
+        hash = HashCombine((*mesh.faces_)[i][j].value(), hash);
       }
     }
     return hash;
