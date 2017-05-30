@@ -750,7 +750,7 @@ bool MeshEdgeBreakerEncoderImpl<TraversalEncoder>::InitAttributeData() {
             corner_table_->num_corners());
     attribute_data_[data_index]
         .encoding_data.vertex_to_encoded_attribute_value_index_map.assign(
-            corner_table_->num_corners(), -1);
+            corner_table_->num_vertices(), -1);
     attribute_data_[data_index].encoding_data.num_values = 0;
     attribute_data_[data_index].connectivity_data.InitFromAttribute(
         mesh_, corner_table_.get(), att);
