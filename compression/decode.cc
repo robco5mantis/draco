@@ -60,7 +60,7 @@ std::unique_ptr<MeshDecoder> CreateMeshDecoder(uint8_t method) {
 #endif
 
 std::unique_ptr<PointCloud> DecodePointCloudFromBuffer(
-    DecoderBuffer *in_buffer) {
+    DecoderBuffer *in_buffer, PointCloudDecoder::CreateDataBuffer cdb) {
   DecoderBuffer temp_buffer(*in_buffer);
   DracoHeader header;
   if (!PointCloudDecoder::DecodeHeader(&temp_buffer, &header))
@@ -71,6 +71,7 @@ std::unique_ptr<PointCloud> DecodePointCloudFromBuffer(
         CreatePointCloudDecoder(header.encoder_method);
     if (!decoder)
       return nullptr;
+    decoder->setCreateDataBuffer(cdb);
     std::unique_ptr<PointCloud> point_cloud(new PointCloud());
     if (!decoder->Decode(in_buffer, point_cloud.get()))
       return nullptr;
@@ -82,6 +83,7 @@ std::unique_ptr<PointCloud> DecodePointCloudFromBuffer(
         CreateMeshDecoder(header.encoder_method);
     if (!decoder)
       return nullptr;
+    decoder->setCreateDataBuffer(cdb);
     std::unique_ptr<Mesh> mesh(new Mesh());
     if (!decoder->Decode(in_buffer, mesh.get()))
       return nullptr;
@@ -91,7 +93,9 @@ std::unique_ptr<PointCloud> DecodePointCloudFromBuffer(
   return nullptr;
 }
 
-std::unique_ptr<Mesh> DecodeMeshFromBuffer(DecoderBuffer *in_buffer) {
+std::unique_ptr<Mesh> DecodeMeshFromBuffer(DecoderBuffer *in_buffer,
+  PointCloudDecoder::CreateDataBuffer cdb,
+  std::unique_ptr<Mesh::Faces> faces) {
 #ifdef DRACO_MESH_COMPRESSION_SUPPORTED
   DecoderBuffer temp_buffer(*in_buffer);
   DracoHeader header;
@@ -103,7 +107,11 @@ std::unique_ptr<Mesh> DecodeMeshFromBuffer(DecoderBuffer *in_buffer) {
   }
   if (!decoder)
     return nullptr;
+  decoder->setCreateDataBuffer(cdb);
   std::unique_ptr<Mesh> mesh(new Mesh());
+  if(faces)
+    mesh->SetFaces(std::move(faces));
+
   if (!decoder->Decode(in_buffer, mesh.get()))
     return nullptr;
   return mesh;

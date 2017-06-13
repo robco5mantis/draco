@@ -18,6 +18,7 @@
 #include "compression/config/compression_shared.h"
 #include "core/decoder_buffer.h"
 #include "mesh/mesh.h"
+#include "compression/point_cloud/point_cloud_decoder.h"
 
 namespace draco {
 
@@ -33,13 +34,16 @@ EncodedGeometryType GetEncodedGeometryType(DecoderBuffer *in_buffer);
 // EncodeMeshToBuffer methods in encode.h. In case the input buffer contains
 // mesh, the returned instance can be down-casted to Mesh.
 std::unique_ptr<PointCloud> DecodePointCloudFromBuffer(
-    DecoderBuffer *in_buffer);
+    DecoderBuffer *in_buffer,
+    PointCloudDecoder::CreateDataBuffer cdb = PointCloudDecoder::CreateDataBuffer());
 
 // Decodes a triangular mesh from the provided buffer. The mesh must be filled
 // with data that was encoded using the EncodeMeshToBuffer method in encode.h.
 // The function will return nullptr in case the input is invalid or if it was
 // encoded with the EncodePointCloudToBuffer method.
-std::unique_ptr<Mesh> DecodeMeshFromBuffer(DecoderBuffer *in_buffer);
+std::unique_ptr<Mesh> DecodeMeshFromBuffer(DecoderBuffer *in_buffer,
+    PointCloudDecoder::CreateDataBuffer cdb = PointCloudDecoder::CreateDataBuffer(),
+    std::unique_ptr<Mesh::Faces> faces = nullptr);
 
 }  // namespace draco
 

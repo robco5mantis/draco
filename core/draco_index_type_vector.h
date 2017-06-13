@@ -25,6 +25,7 @@ namespace draco {
 template <class IndexTypeT, class ValueTypeT>
 class BasicIndexType {
 public:
+  typedef ValueTypeT value_type;
   typedef ValueTypeT& reference;
   typedef const ValueTypeT& const_reference;
 
@@ -33,10 +34,10 @@ public:
   virtual void clear() = 0;
   virtual void reserve(size_t size) = 0;
   virtual void resize(size_t size) = 0;
-  virtual void resize(size_t size, const ValueTypeT &val) = 0;
-  virtual void assign(size_t size, const ValueTypeT &val) = 0;
-  virtual void push_back(const ValueTypeT &val) = 0;
-  virtual void push_back(ValueTypeT &&val) = 0;
+  virtual void resize(size_t size, const value_type &val) = 0;
+  virtual void assign(size_t size, const value_type &val) = 0;
+  virtual void push_back(const value_type &val) = 0;
+  virtual void push_back(value_type &&val) = 0;
 
   size_t size() const { return data_size_; }
 
@@ -70,10 +71,10 @@ public:
   void clear() override { throw std::logic_error("IndexTypeFixedSize is fixed size");  }
   void reserve(size_t size) override { throw std::logic_error("IndexTypeFixedSize is fixed size"); }
   void resize(size_t size) override { throw std::logic_error("IndexTypeFixedSize is fixed size"); }
-  void resize(size_t size, const ValueTypeT &val) override { throw std::logic_error("IndexTypeFixedSize is fixed size"); }
-  void assign(size_t size, const ValueTypeT &val) override { throw std::logic_error("IndexTypeFixedSize is fixed size"); }
-  void push_back(const ValueTypeT &val) override { throw std::logic_error("IndexTypeFixedSize is fixed size"); }
-  void push_back(ValueTypeT &&val) override { throw std::logic_error("IndexTypeFixedSize is fixed size"); }
+  void resize(size_t size, const value_type &val) override { throw std::logic_error("IndexTypeFixedSize is fixed size"); }
+  void assign(size_t size, const value_type &val) override { throw std::logic_error("IndexTypeFixedSize is fixed size"); }
+  void push_back(const value_type &val) override { throw std::logic_error("IndexTypeFixedSize is fixed size"); }
+  void push_back(value_type &&val) override { throw std::logic_error("IndexTypeFixedSize is fixed size"); }
 };
 
 // A wrapper around the standard std::vector that supports indexing of the
@@ -93,11 +94,11 @@ class IndexTypeVector
   void clear() override { vector_.clear(); data_ = nullptr; data_size_ = 0; }
   void reserve(size_t size) override { vector_.reserve(size); update(); }
   void resize(size_t size) override { vector_.resize(size); update(); }
-  void resize(size_t size, const ValueTypeT &val) override { vector_.resize(size, val); update(); }
-  void assign(size_t size, const ValueTypeT &val) override { vector_.assign(size, val); update(); }
+  void resize(size_t size, const value_type &val) override { vector_.resize(size, val); update(); }
+  void assign(size_t size, const value_type &val) override { vector_.assign(size, val); update(); }
   
-  void push_back(const ValueTypeT &val) override { vector_.push_back(val); update(); }
-  void push_back(ValueTypeT &&val) override { vector_.push_back(std::move(val)); update(); }
+  void push_back(const value_type &val) override { vector_.push_back(val); update(); }
+  void push_back(value_type &&val) override { vector_.push_back(std::move(val)); update(); }
 
   IndexTypeVector<IndexTypeT, ValueTypeT>& operator =(IndexTypeVector<IndexTypeT, ValueTypeT> const &rhs) { vector_ = rhs.vector_; update(); return *this; }
 
